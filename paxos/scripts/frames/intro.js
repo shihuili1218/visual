@@ -33,22 +33,18 @@ define([], function () {
         })
 	
 	
-	.after(1000, function () {
+	   .after(1000, function () {
             frame.model().title = '<h2><em>Paxos</em> is a algorithm for implementing distributed consensus.</h2>'
-                        + '<h3 id="desc" style="visibility:hidden;">Paxos\' negotiation process is divided into two stages.</h3>'
-						+ '<h3 id="prepare" style="visibility:hidden;">Prepare: </h3>'
-						+ '<h3 id="accept" style="visibility:hidden;">Accept: </h3>'
+                        + '<h3 id="paxos-desc" style="visibility:hidden;">Paxos is often used to implement distributed state machines.</h3>'
+                        + '<h3 id="sm-desc" style="visibility:hidden;">State machine can be database, configuration center, naming service, or any business program.</h3>'
                         + '<br/>' + frame.model().controls.html();
             layout.invalidate();
         })
-		.after(1000, function () {
-            layout.fadeIn($(".title #desc"));
+        .after(1000, function () {
+            layout.fadeIn($(".title #paxos-desc"));
         })
-		.after(1000, function () {
-            layout.fadeIn($(".title #prepare"));
-        })
-		.after(1000, function () {
-            layout.fadeIn($(".title #accept"));
+        .after(1000, function () {
+            layout.fadeIn($(".title #sm-desc"));
         })
 		.after(1000, function () {
             frame.model().controls.show();
@@ -58,7 +54,6 @@ define([], function () {
             layout.invalidate();
         })
 
-		
 
         .after(300, function () {
             frame.snapshot();
