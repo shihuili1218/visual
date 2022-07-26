@@ -9,7 +9,7 @@ So often we use databases and servers without really understanding how they work
 The way that data flows is critical to performance and reliability.
 
 This project seeks to spread the knowledge of our systems through interactive visualization.
-If you have a system that you understand and wish to share then please add a [GitHub Issue](https://github.com/farawayliu/algorithm-visualization/issues).
+If you have a system that you understand and wish to share then please add a [GitHub Issue](https://github.com/shihuili1218/visual/issues).
 Data visualization knowledge is not necessary -- just the desire to spread some knowledge.
 
 
@@ -20,6 +20,6 @@ Please report any bugs you find or any suggestions you have for how to make thes
 
 1. [Raft: Understandable Distributed Consensus](http://thesecretlivesofdata.com/raft) ([thesecretlivesofdata #1](https://github.com/benbjohnson/thesecretlivesofdata/issues/1))
 
-2. Paxos ([#1](https://github.com/farawayliu/algorithm-visualization/issues/1))
-
+2. Paxos ([#1](https://github.com/shihuili1218/visual/issues/1))
+   
 If you have suggestions for new topics, please submit a new Github issue.

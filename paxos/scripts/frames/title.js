@@ -15,12 +15,12 @@ define([], function () {
 
         .after(500, function () {
             frame.model().title = '<h1 style="visibility:visible">Paxos</h1>'
-                        + '<h2 style="visibility:hidden">Understandable Distributed Consensus</h2>'
+                        + '<h2 style="visibility:visible">The ancestor of consensus algorithm</h2>'
                         + '<br/>' + frame.model().controls.html();
             layout.invalidate();
         })
         .after(500, function () {
-            frame.model().subtitle = '<p style="visibility:visible"><em><a href="https://github.com/benbjohnson/thesecretlivesofdata/issues/1" target="_blank">Please note: this is a working draft. Click here to provide feedback.</a></em></h1>';
+            frame.model().subtitle = '<p style="visibility:visible"><em><a href="https://github.com/shihuili1218/visual/issues/1" target="_blank">Please note: discussion on Paxos visualization. Click here to provide feedback.</a></em></h1>';
             layout.invalidate();
             frame.model().controls.show();
         })
