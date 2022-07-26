@@ -21,12 +21,8 @@ define([], function () {
 
         .after(1000, function () {
             frame.model().title = '<h2 style="visibility:visible">So What is Paxos Algorithm?</h2>'
-                        + '<h3 style="visibility:hidden;">Let\'s start with an example...</h3>'
                         + '<br/>' + frame.model().controls.html();
             layout.invalidate();
-        })
-        .after(1000, function () {
-            layout.fadeIn($(".title h3"));
         })
         .after(1000, function () {
             frame.model().controls.show();
@@ -34,7 +30,7 @@ define([], function () {
 	
 	
 	   .after(1000, function () {
-            frame.model().title = '<h2><em>Paxos</em> is a algorithm for implementing distributed consensus.</h2>'
+            frame.model().title = '<h2>Paxos is a algorithm for implementing distributed consensus.</h2>'
                         + '<h3 id="paxos-desc" style="visibility:hidden;">Paxos is often used to implement distributed state machines.</h3>'
                         + '<h3 id="sm-desc" style="visibility:hidden;">State machine can be database, configuration center, naming service, or any business program.</h3>'
                         + '<br/>' + frame.model().controls.html();
