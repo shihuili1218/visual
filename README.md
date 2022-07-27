@@ -18,8 +18,8 @@ Data visualization knowledge is not necessary -- just the desire to spread some 
 Below is a list of data visualizations and their associated Github issue.
 Please report any bugs you find or any suggestions you have for how to make these visualizations more understandable.
 
-1. [Raft: Understandable Distributed Consensus](http://thesecretlivesofdata.com/raft) ([thesecretlivesofdata #1](https://github.com/benbjohnson/thesecretlivesofdata/issues/1))
+1. [Raft: Understandable Distributed Consensus](http://visual.ofcoder.com/raft) ([thesecretlivesofdata #1](https://github.com/benbjohnson/thesecretlivesofdata/issues/1))
 
-2. Paxos ([#1](https://github.com/shihuili1218/visual/issues/1))
+2. [Paxos: The Ancestor Of Consensus Algorithm](http://visual.ofcoder.com/paxos) ([#1](https://github.com/shihuili1218/visual/issues/1))
    
 If you have suggestions for new topics, please submit a new Github issue.

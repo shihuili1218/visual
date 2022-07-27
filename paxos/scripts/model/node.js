@@ -10,6 +10,8 @@ define(["./log_entry"], function (Proposal) {
         this._value = "";
         this._proposalNo = 0;
         this._log = [];
+        this._nameVisible = true;
+        this._proposalNoVisible = true;
     }
 
     Node.prototype = new playback.DataObject();

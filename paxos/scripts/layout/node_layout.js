@@ -119,8 +119,12 @@ define([], function () {
                 g.each(function (node) {
                     // Description.
                     var desc = [];
-                    desc.push(node.state() + " " + node.id);
-                    desc.push("ProposalNo: " + node.proposalNo());
+                    if (node._nameVisible){
+                        desc.push(node.state() + " " + node.id);
+                    }
+                    if (node._proposalNoVisible){
+                        desc.push("ProposalNo: " + node.proposalNo());
+                    }
                     desc.push();
 
                     d3.select(this).select("text.node-description")

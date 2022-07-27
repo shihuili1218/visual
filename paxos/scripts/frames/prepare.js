@@ -132,9 +132,9 @@ define(["../model/log_entry"], function (Proposal) {
                 layout.invalidate();
             })
             .after(100, function () {
-                node("A")._proposalNo += 1
-                node("B")._proposalNo += 1
-                node("C")._proposalNo += 1
+                node("A")._proposalNo += 1;
+                node("B")._proposalNo += 1;
+                node("C")._proposalNo += 1;
                 layout.invalidate();
             })
             .after(800, function () {

@@ -5,27 +5,37 @@
 
 define([], function () {
     var TYPE = {
-            "AEREQ": {
-                color: "red",
-                size: 2,
-                opacity: 1,
-            },
-            "AERSP": {
-                color: "red",
-                size: 1,
-                opacity: 0,
-            },
-            "RVREQ": {
-                color: "green",
-                size: 2,
-                opacity: 1,
-            },
-            "RVRSP": {
-                color: "green",
-                size: 1,
-                opacity: 0,
-            }
-        };
+        "LNREQ": {
+            color: "blue",
+            size: 2,
+            opacity: 1,
+        },
+        "LNRSP": {
+            color: "blue",
+            size: 1,
+            opacity: 0,
+        },
+        "AEREQ": {
+            color: "red",
+            size: 2,
+            opacity: 1,
+        },
+        "AERSP": {
+            color: "red",
+            size: 1,
+            opacity: 0,
+        },
+        "RVREQ": {
+            color: "green",
+            size: 2,
+            opacity: 1,
+        },
+        "RVRSP": {
+            color: "green",
+            size: 1,
+            opacity: 0,
+        }
+    };
 
     function MessageLayout(parent) {
         this._parent = parent;

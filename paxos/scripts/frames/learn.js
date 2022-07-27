@@ -71,60 +71,70 @@ define(["../model/log_entry"], function (Proposal) {
                     + model().controls.html();
                 layout.invalidate();
             })
+            .after(500, function () {
+                model().clients.remove(client("X"));
+                model().nodes.remove(node("A"));
+                model().nodes.remove(node("B"));
+                model().nodes.remove(node("C"));
+                layout.invalidate();
+            })
             .after(1000, function () {
-                // model().nodes.splice(model().nodes.findIndex(item=>item._state==="acceptor"), 3)
+                model().nodes.create("L1");
+                model().nodes.create("L2");
+                node("L1")._proposalNoVisible = false;
+                node("L2")._proposalNoVisible = false;
+                node("L1")._state = "learner";
+                node("L2")._state = "learner";
+                layout.invalidate();
+            })
+            .after(1000, function () {
+                model().send(node("P"), node("L1"), {type: "LNREQ"}, function () {
+                    node("L1")._log.push(new Proposal(model(), 0, 0, "α"));
+                    layout.invalidate();
+                });
+                model().send(node("P"), node("L2"), {type: "LNREQ"}, function () {
+                    node("L2")._log.push(new Proposal(model(), 0, 0, "α"));
+                    layout.invalidate();
+                });
                 layout.invalidate();
             })
             .after(100, wait).indefinite()
 
             .after(100, function () {
                 frame.snapshot();
-                model().subtitle = '<h2>The acceptor judges whether to approve the <em>Accept</em> message according to the ProposalNo.</h2>'
+                model().subtitle = '<h2>It is worth noting that any number of <em>Learn</em> messages can be lost without compromising security.</h2>'
                     + model().controls.html();
                 layout.invalidate();
             })
             .after(100, wait).indefinite()
 
-            .after(100, function () {
-                frame.snapshot();
-                model().subtitle = '<h2>If local.ProposalNo ≤ msg.ProposalNo, the Acceptor approves the <em>Accept</em> message.</h2>'
-                    + model().controls.html();
+            .after(300, function () {
+                frame.model().clear();
+                frame.model().title = '<h2 style="visibility:visible">In addition, the Learn phase can propagate proposals in any way, for example:</h2>'
+                    + '<h3 id="gossip" style="visibility:hidden">Gossip</h3>'
+                    + '<h3 id="mainLearner" style="visibility:hidden">Elect the master Learner to instead the Proposer broadcast Proposal</h3>'
+                    + '<h3 id="etc" style="visibility:hidden">etc...</h3>'
+                    + '<br/>' + frame.model().controls.html();
                 layout.invalidate();
             })
-            .after(100, function () {
-                node("A")._log.push(new Proposal(model(), 0, 0, "SET 5"));
-                node("B")._log.push(new Proposal(model(), 0, 0, "SET 5"));
-                node("C")._log.push(new Proposal(model(), 0, 0, "SET 5"));
-                layout.invalidate();
+            .after(1000, function () {
+                layout.fadeIn($(".title #gossip"));
+            })
+            .after(1000, function () {
+                layout.fadeIn($(".title #mainLearner"));
+            })
+            .after(1000, function () {
+                layout.fadeIn($(".title #etc"));
             })
             .after(800, function () {
-                model().send(node("A"), node("P"), {type:"RERSP"}, function () {
-                    layout.invalidate();
-                });
-                model().send(node("B"), node("P"), {type:"RERSP"}, function () {
-                    layout.invalidate();
-                });
-                model().send(node("C"), node("P"), {type:"RERSP"}, function () {
-                    layout.invalidate();
-                });
-                layout.invalidate();
+                frame.model().controls.show();
             })
-            .after(100, wait).indefinite()
-
-            .after(100, function () {
-                frame.snapshot();
-                model().subtitle = '<h2>Once the Proposer has <span style="color:green">majority</span> supporters, the command has reached a consensus.</h2>'
-                    + model().controls.html();
-                layout.invalidate();
-            })
-            .after(50, wait).indefinite()
-
 
             .after(300, function () {
                 frame.model().clear();
                 frame.model().title = '<h2 style="visibility:visible">The end.</h2>';
                 layout.invalidate();
-            })
+            });
 
 
 
