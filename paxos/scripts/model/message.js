@@ -30,6 +30,10 @@ define([], function () {
         return this.payload !== null && this.payload !== undefined ? this.payload.type : "";
     };
 
+    Message.prototype.text = function () {
+        return this.payload !== null && this.payload !== undefined ? this.payload.text : "";
+    };
+
     /**
      * Determines the bounding box of the message.
      */

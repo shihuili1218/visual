@@ -102,9 +102,10 @@ define(["../model/log_entry"], function (LogEntry) {
             })
 
             .after(1000, function () {
-                frame.model().title = '<h2>Paxos\' negotiation program is divided into two stages.</h2>'
-                    + '<h3 id="prepare" style="visibility:hidden;">Prepare: </h3>'
-                    + '<h3 id="accept" style="visibility:hidden;">Accept: </h3>'
+                frame.model().title = '<h2>Paxos\' negotiation program is divided into three stages.</h2>'
+                    + '<h3 id="prepare" style="visibility:hidden;">Prepare Phase: Negotiate ProposalNo and obtain Proposal that may reach consensus in the previous round.</h3>'
+                    + '<h3 id="accept" style="visibility:hidden;">Accept Phase: Really negotiate the Proposal and broadcast the Proposal to all Acceptors.</h3>'
+                    + '<h3 id="accept" style="visibility:hidden;">Learn Phase: Learn reach consensus Proposal and input it into the state machine.</h3>'
                     + '<br/>' + frame.model().controls.html();
                 layout.invalidate();
             })

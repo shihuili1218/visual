@@ -9,7 +9,6 @@ define(["../model/log_entry"], function (Proposal) {
             model = function() { return frame.model(); },
             client = function(id) { return frame.model().clients.find(id); },
             node = function(id) { return frame.model().nodes.find(id); },
-            cluster = function(value) { model().nodes.toArray().forEach(function(node) { node.cluster(value); }); },
             wait = function() { var self = this; model().controls.show(function() { player.play(); self.stop(); }); },
             subtitle = function(s, pause) { model().subtitle = s + model().controls.html(); layout.invalidate(); if (pause === undefined) { model().controls.show() }; };
 
@@ -21,7 +20,7 @@ define(["../model/log_entry"], function (Proposal) {
             layout.invalidate();
         })
             .after(500, function () {
-                frame.model().title = '<h2 style="visibility:visible">Accept Phase</h1>'
+                frame.model().title = '<h2 style="visibility:visible">Learn Phase</h1>'
                     + '<br/>' + frame.model().controls.html();
                 layout.invalidate();
             })
@@ -43,22 +42,24 @@ define(["../model/log_entry"], function (Proposal) {
                 model().nodes.create("A");
                 node("A")._state = "acceptor";
                 node("A")._proposalNo = 2;
+                node("A")._log.push(new Proposal(model(), 0, 0, "α"));
 
                 model().nodes.create("B");
                 node("B")._state = "acceptor";
                 node("B")._proposalNo = 2;
+                node("B")._log.push(new Proposal(model(), 0, 0, "α"));
 
                 model().nodes.create("C");
                 node("C")._state = "acceptor";
-                node("C")._log.push(new Proposal(model(), 0, 0, "α"));
                 node("C")._proposalNo = 2;
+                node("C")._log.push(new Proposal(model(), 0, 0, "α"));
 
                 frame.model().clients.create("X");
-                client("X")._value = "λ";
+                client("X")._value = "α";
             })
             .after(100, function () {
                 frame.snapshot();
-                model().subtitle = '<h2>...Then, the Accept phase is the real negotiation phase of command.</h2>'
+                model().subtitle = '<h2>...Then, α We have reached a consensus.</h2>'
                     + model().controls.html();
                 layout.invalidate();
             })
@@ -66,20 +67,12 @@ define(["../model/log_entry"], function (Proposal) {
 
             .after(100, function () {
                 frame.snapshot();
-                model().subtitle = '<h2>The Proposer broadcasts the command to all Acceptors through the <em>Accept</em> message in the phase.</h2>'
+                model().subtitle = '<h2>The Proposer broadcasts α to all Learners through the <em>Learn</em> message.</h2>'
                     + model().controls.html();
                 layout.invalidate();
             })
             .after(1000, function () {
-                model().send(node("P"), node("A"), {type:"AEREQ"}, function () {
-                    layout.invalidate();
-                });
-                model().send(node("P"), node("B"), {type:"AEREQ"}, function () {
-                    layout.invalidate();
-                });
-                model().send(node("P"), node("C"), {type:"AEREQ"}, function () {
-                    layout.invalidate();
-                });
+                // model().nodes.splice(model().nodes.findIndex(item=>item._state==="acceptor"), 3)
                 layout.invalidate();
             })
             .after(100, wait).indefinite()
@@ -99,18 +92,19 @@ define(["../model/log_entry"], function (Proposal) {
                 layout.invalidate();
             })
             .after(100, function () {
-                node("A")._log.push(new Proposal(model(), 0, 0, "α"));
-                node("B")._log.push(new Proposal(model(), 0, 0, "α"));
+                node("A")._log.push(new Proposal(model(), 0, 0, "SET 5"));
+                node("B")._log.push(new Proposal(model(), 0, 0, "SET 5"));
+                node("C")._log.push(new Proposal(model(), 0, 0, "SET 5"));
                 layout.invalidate();
             })
             .after(800, function () {
-                model().send(node("A"), node("P"), {type:"AERSP"}, function () {
+                model().send(node("A"), node("P"), {type:"RERSP"}, function () {
                     layout.invalidate();
                 });
-                model().send(node("B"), node("P"), {type:"AERSP"}, function () {
+                model().send(node("B"), node("P"), {type:"RERSP"}, function () {
                     layout.invalidate();
                 });
-                model().send(node("C"), node("P"), {type:"AERSP"}, function () {
+                model().send(node("C"), node("P"), {type:"RERSP"}, function () {
                     layout.invalidate();
                 });
                 layout.invalidate();
@@ -125,25 +119,14 @@ define(["../model/log_entry"], function (Proposal) {
             })
             .after(50, wait).indefinite()
 
-            // response client.
-            .after(100, function () {
-                frame.snapshot();
-                model().subtitle = '<h2>Proposer will feed back the consensus Proposal to the client.</h2>'
-                    + model().controls.html();
-                layout.invalidate();
-            })
-            .after(500, function () {
-                model().send(node("P"), client("X"), null, function () {
-                    client("X")._value = "α";
-                    layout.invalidate();
-                });
-                layout.invalidate();
-            })
-            .after(50, wait).indefinite()
 
-            .then(function () {
-                player.next();
+            .after(300, function () {
+                frame.model().clear();
+                frame.model().title = '<h2 style="visibility:visible">The end.</h2>';
+                layout.invalidate();
             })
+
+
 
         player.play();
     };
