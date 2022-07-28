@@ -111,7 +111,7 @@ define(["./log_entry"], function (Proposal) {
     Node.prototype.execute = function (command, callback) {
         var entry,
             prevIndex = (this._log.length > 0 ? this._log[this._log.length - 1].index : 0);
-        if (this.state() !== "leader") {
+        if (this.state() !== "proposer") {
             return false;
         }
 

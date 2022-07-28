@@ -367,6 +367,7 @@ Layout.prototype.invalidateTitle = function () {
         if (this.prevTitle === "" && title !== "") {
             // Fade title in.
             this.titleContainer.style("display", "block");
+            this.titleContainer.style("overflow", "auto");
             this.titleContainer.html(html);
             this.fadeIn($(this.titleContainer[0][0]));
         } else if (this.prevTitle !== "" && title === "") {
@@ -399,6 +400,7 @@ Layout.prototype.invalidateSubtitle = function () {
         if (this.prevSubtitle === "" && text !== "") {
             // Fade in.
             this.subtitleContainer.style("display", "block");
+            this.subtitleContainer.style("overflow", "auto");
             this.subtitleContainer.html(html);
             this.fadeIn($(this.subtitleContainer[0][0]));
         } else if (this.prevSubtitle !== "" && text === "") {
