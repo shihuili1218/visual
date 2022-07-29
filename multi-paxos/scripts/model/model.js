@@ -3,13 +3,15 @@
 /*jslint browser: true, nomen: true*/
 /*global define, playback, tsld*/
 
-define(["./controls", "./client", "./message", "./node", "./log_entry"], function (Controls, Client, Message, Node, Proposal) {
+define(["./controls", "./client", "./message", "./node"], function (Controls, Client, Message, Node) {
     function Model() {
         playback.Model.call(this);
 
         this.title = "";
         this.subtitle = "";
         this.defaultNetworkLatency = Model.DEFAULT_NETWORK_LATENCY;
+        this.heartbeatTimeout = Model.DEFAULT_HEARTBEAT_TIMEOUT;
+        this.electionTimeout = Model.DEFAULT_ELECTION_TIMEOUT;
         this.controls = new Controls(this);
         this.nodes = new playback.Set(this, Node);
         this.clients = new playback.Set(this, Client);
@@ -21,7 +23,6 @@ define(["./controls", "./client", "./message", "./node", "./log_entry"], functio
             x: [0, 100],
             y: [0, 100],
         };
-        this._cyclePaxosTimer = null;
     }
 
     Model.prototype = new playback.Model();
@@ -36,6 +37,17 @@ define(["./controls", "./client", "./message", "./node", "./log_entry"], functio
      * The default network latency between two nodes if not set.
      */
     Model.DEFAULT_NETWORK_LATENCY   = 20 / Model.SIMULATION_RATE;
+
+    /**
+     * The default heartbeat timeout for the model.
+     */
+    Model.DEFAULT_HEARTBEAT_TIMEOUT = 50 / Model.SIMULATION_RATE;
+
+    /**
+     * The default election timeout for the model.
+     */
+    Model.DEFAULT_ELECTION_TIMEOUT  = 150 / Model.SIMULATION_RATE;
+
 
     /**
      * Finds either a node or client by id.
@@ -140,97 +152,6 @@ define(["./controls", "./client", "./message", "./node", "./log_entry"], functio
         this.clients.removeAll();
         this.messages.removeAll();
         this.latencies = {};
-    };
-
-
-    Model.prototype.randomProposal = function (len) {
-        if (len) {
-            len = 3;
-        }
-        const syb = ["α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω"];
-        let result = "";
-        for (let i = 0; i < len; i++){
-            const index = Math.floor(Math.random() * syb.length);
-            result += syb[index];
-        }
-        return result;
-    }
-
-    /**
-     * Cycle Paxos.
-     */
-    Model.prototype.loopRunPaxos = function (client, proposer, acceptors) {
-
-        var self = this, timeout = 5000;
-
-
-        let proposal = new Proposal(this, proposer._proposalNo, proposer._proposalNo, self.randomProposal(2));
-        self.send(client, proposer, null, function () {
-            proposer._log.push(proposal.command);
-            self.sendPrepareRequests(proposer, acceptors, proposal);
-        });
-
-
-        // if (this._cyclePaxosTimer === null) {
-        //     this.clearCyclePaxos();
-        //     this._cyclePaxosTimer = this.frame().timer(function () {
-        //         let proposal = new Proposal(this, proposer._proposalNo, proposer._proposalNo, self.randomProposal(2));
-        //         self.send(client, proposer, null, function () {
-        //             proposer._log.push(proposal.command);
-        //             self.sendPrepareRequests(proposer, acceptors, proposal);
-        //             this.layout.invalidate();
-        //         });
-        //     }).interval(timeout);
-        // }
-    };
-
-    /**
-     * Clears the CyclePaxosTimer.
-     */
-    Model.prototype.clearCyclePaxos = function () {
-        this._cyclePaxosTimer = null;
-    };
-
-    Model.prototype.sendPrepareRequests = function (proposer, acceptors, proposal) {
-        var self = this;
-        var count = 0;
-        proposer._proposalNo += 1;
-        for (const node in acceptors) {
-            self.send(proposer, node, {type: "RVREQ"}, function () {
-                if (proposal.term > node._proposalNo) {
-                    node._proposalNo = proposal.term;
-                    self.send(node, proposer, {type: "RVRSP"}, function () {
-                        count++;
-                    })
-                }
-            });
-        }
-
-        console.log('消息内容！' + acceptors.length);
-        // if (count >= (Math.floor(acceptors.length/2) + 1)) {
-        //     self.sendAcceptRequests(proposer, acceptors, proposal);
-        // } else {
-        //     self.sendPrepareRequests(proposer, acceptors, proposal);
-        // }
-    };
-
-    Model.prototype.sendAcceptRequests = function (proposer, acceptors, proposal) {
-        var count = 0;
-        acceptors.forEach(function (node) {
-            self.send(proposer, node, {type: "AEREQ"}, function () {
-                if (proposal.term >= node._proposalNo) {
-                    node._log.push(proposal.command);
-                    self.send(node, proposer, {type: "AERSP"}, function () {
-                        count++;
-                    })
-                }
-            });
-        });
-        if (count >= (Math.floor(acceptors.length/2) + 1)){
-            self.sendAcceptRequests(proposer, acceptors, proposal);
-        } else {
-            // finish.
-        }
     };
 
     /**

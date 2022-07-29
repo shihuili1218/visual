@@ -37,8 +37,8 @@ define([], function () {
     Client.prototype.send = function (target, command) {
         var message, self = this;
         message = this.model().send(this, target, command, function () {
-            self.model().find(target.id).execute(command, function () {
-                self.model().send(target, self, null, function () {
+            self.model().find(target.id).execute(command, function() {
+                self.model().send(target, self, null, function() {
                     self.dispatchChangeEvent("recv");
                 });
             });
