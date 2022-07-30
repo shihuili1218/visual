@@ -129,9 +129,14 @@ define(["../model/log_entry"], function (Proposal) {
             .after(800, function () {
                 frame.model().controls.show();
             })
-            .after(100, wait).indefinite()
 
-            .then(function () {
+            .after(50, function () {
+                frame.model().title = frame.model().subtitle = "";
+                layout.invalidate();
+            })
+
+            .after(300, function () {
+                frame.snapshot();
                 player.next();
             })
 
