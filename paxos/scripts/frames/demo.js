@@ -23,12 +23,32 @@ define([], function () {
             frame.model().clear();
             layout.invalidate();
         })
-
+            .after(500, function () {
+                frame.model().title = '<h2 style="visibility:visible">Demonstration</h1>'
+                    + '<br/>' + frame.model().controls.html();
+                layout.invalidate();
+            })
+            .after(200, wait).indefinite()
+            .after(500, function () {
+                model().title = "";
+                layout.invalidate();
+            })
 
             //------------------------------
             // Initialization
             //------------------------------
             .after(10, function () {
+
+                model().nodes.create("L1");
+                node("L1")._state = "learner";
+                node("L1")._proposalNo = 0;
+                node("L1")._proposalNoVisible = false;
+
+                model().nodes.create("L2");
+                node("L2")._state = "learner";
+                node("L2")._proposalNo = 0;
+                node("L2")._proposalNoVisible = false;
+
                 model().nodes.create("P");
                 node("P")._state = "proposer";
                 node("P")._proposalNo = 0;
@@ -49,7 +69,7 @@ define([], function () {
                 layout.invalidate();
             })
             .after(800, function () {
-                model().loopRunPaxos(client("X"), node("P"), [node("A"), node("B"), node("C")])
+                model().loopRunPaxos(client("X"), node("P"), [node("A"), node("B"), node("C")], [node("L1"), node("L2")])
             })
             .then(function () {
                 frame.snapshot();
@@ -57,11 +77,11 @@ define([], function () {
                     + model().controls.html();
                 layout.invalidate();
             })
-            .then(wait).indefinite()
+            .after(100, wait).indefinite()
 
-            // .at(model(), "sendMsg", function () {
-            //     layout.invalidate();
-            // })
+            .after(10, function (){
+                model().stopRunPaxos();
+            })
 
             .after(300, function () {
                 frame.model().clear();

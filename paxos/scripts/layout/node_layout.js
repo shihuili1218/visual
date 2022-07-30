@@ -162,7 +162,7 @@ define([], function () {
                                     return (self.parent().scales.size(d.h) / 2) + 2;
                                 },
                                 fill: function (d) {
-                                    return "black";
+                                    return "red";
                                 },
                             };
                             var g = this.enter().append("g").attr("class", "log-entry");

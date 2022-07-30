@@ -3,8 +3,8 @@
 /*jslint browser: true, nomen: true*/
 /*global define*/
 
-define(["./title", "./intro", "./overview", "./prepare", "./accept", "./learn", "./demonstration"],
-    function (title, intro, overview, prepare, accept, learn, demonstration) {
+define(["./title", "./intro", "./overview", "./prepare", "./accept", "./learn", "./demo"],
+    function (title, intro, overview, prepare, accept, learn, demo) {
         return function (player) {
             player.frame("home", "Home", title);
             player.frame("intro", "What is Paxos?", intro);
@@ -12,6 +12,6 @@ define(["./title", "./intro", "./overview", "./prepare", "./accept", "./learn", 
             player.frame("prepare", "Prepare Phase", prepare);
             player.frame("accept", "Accept Phase", accept);
             player.frame("learn", "Learn Phase", learn);
-            player.frame("demonstration", "Demonstration", demonstration);
+            player.frame("demo", "Demonstration", demo);
         };
     });

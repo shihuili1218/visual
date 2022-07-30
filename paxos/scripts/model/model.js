@@ -1,4 +1,3 @@
-
 "use strict";
 /*jslint browser: true, nomen: true*/
 /*global define, playback, tsld*/
@@ -22,6 +21,7 @@ define(["./controls", "./client", "./message", "./node", "./log_entry"], functio
             y: [0, 100],
         };
         this._cyclePaxosTimer = null;
+        this.addEventListener("flush", this.onFlush);
     }
 
     Model.prototype = new playback.Model();
@@ -30,12 +30,12 @@ define(["./controls", "./client", "./message", "./node", "./log_entry"], functio
     /**
      * The ratio of simulation time to wall clock time.
      */
-    Model.SIMULATION_RATE           = (1/50);
+    Model.SIMULATION_RATE = (1 / 50);
 
     /**
      * The default network latency between two nodes if not set.
      */
-    Model.DEFAULT_NETWORK_LATENCY   = 20 / Model.SIMULATION_RATE;
+    Model.DEFAULT_NETWORK_LATENCY = 20 / Model.SIMULATION_RATE;
 
     /**
      * Finds either a node or client by id.
@@ -56,7 +56,7 @@ define(["./controls", "./client", "./message", "./node", "./log_entry"], functio
      */
     Model.prototype.tick = function (t) {
         // Remove messages that have already been received.
-        this.messages.filter(function(message) {
+        this.messages.filter(function (message) {
             return (message.recvTime > t);
         });
     };
@@ -68,8 +68,8 @@ define(["./controls", "./client", "./message", "./node", "./log_entry"], functio
      */
     Model.prototype.send = function (source, target, payload, callback) {
         var message,
-            source = (typeof(source) == "string" ? source : source.id),
-            target = (typeof(target) == "string" ? target : target.id),
+            source = (typeof (source) == "string" ? source : source.id),
+            target = (typeof (target) == "string" ? target : target.id),
             latency = this.latency(source, target);
 
         if (!(latency > 0)) {
@@ -77,9 +77,9 @@ define(["./controls", "./client", "./message", "./node", "./log_entry"], functio
         }
 
         message = this.messages.create();
-        message.payload  = (payload !== undefined ? payload : null);
-        message.source   = source;
-        message.target   = target;
+        message.payload = (payload !== undefined ? payload : null);
+        message.source = source;
+        message.target = target;
         message.sendTime = this.playhead();
         message.recvTime = message.sendTime + latency;
 
@@ -144,12 +144,12 @@ define(["./controls", "./client", "./message", "./node", "./log_entry"], functio
 
 
     Model.prototype.randomProposal = function (len) {
-        if (len) {
-            len = 3;
+        if (arguments.length === 0) {
+            len = 1;
         }
         const syb = ["α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω"];
         let result = "";
-        for (let i = 0; i < len; i++){
+        for (let i = 0; i < len; i++) {
             const index = Math.floor(Math.random() * syb.length);
             result += syb[index];
         }
@@ -159,78 +159,108 @@ define(["./controls", "./client", "./message", "./node", "./log_entry"], functio
     /**
      * Cycle Paxos.
      */
-    Model.prototype.loopRunPaxos = function (client, proposer, acceptors) {
-
+    Model.prototype.loopRunPaxos = function (client, proposer, acceptors, learners) {
         var self = this, timeout = 5000;
 
-
-        let proposal = new Proposal(this, proposer._proposalNo, proposer._proposalNo, self.randomProposal(2));
-        self.send(client, proposer, null, function () {
-            proposer._log.push(proposal.command);
-            self.sendPrepareRequests(proposer, acceptors, proposal);
-        });
-
-
-        // if (this._cyclePaxosTimer === null) {
-        //     this.clearCyclePaxos();
-        //     this._cyclePaxosTimer = this.frame().timer(function () {
-        //         let proposal = new Proposal(this, proposer._proposalNo, proposer._proposalNo, self.randomProposal(2));
-        //         self.send(client, proposer, null, function () {
-        //             proposer._log.push(proposal.command);
-        //             self.sendPrepareRequests(proposer, acceptors, proposal);
-        //             this.layout.invalidate();
-        //         });
-        //     }).interval(timeout);
-        // }
+        if (this._cyclePaxosTimer === null) {
+            this.stopRunPaxos();
+            this._cyclePaxosTimer = this.frame().timer(function () {
+                self.send(client, proposer, null, function () {
+                    self.sendPrepareRequests(client, proposer, acceptors, learners, self.randomProposal(3));
+                });
+            }).interval(timeout);
+        }
     };
 
     /**
      * Clears the CyclePaxosTimer.
      */
-    Model.prototype.clearCyclePaxos = function () {
+    Model.prototype.stopRunPaxos = function () {
+        this.frame().clearTimer(this._cyclePaxosTimer);
         this._cyclePaxosTimer = null;
     };
 
-    Model.prototype.sendPrepareRequests = function (proposer, acceptors, proposal) {
-        var self = this;
-        var count = 0;
+    Model.prototype.sendPrepareRequests = function (client, proposer, acceptors, learners, proposalVal) {
+        var self = this,
+            success = 0,
+            failure = 0,
+            next = true,
+            grant = Math.floor(acceptors.length / 2) + 1;
+
         proposer._proposalNo += 1;
-        for (const node in acceptors) {
+        var proposal = new Proposal(this, proposer._proposalNo, proposer._proposalNo, proposalVal);
+        proposer._log.push(proposal);
+        proposer.dispatchChangeEvent("flush");
+
+        acceptors.forEach(function (node) {
             self.send(proposer, node, {type: "RVREQ"}, function () {
                 if (proposal.term > node._proposalNo) {
                     node._proposalNo = proposal.term;
                     self.send(node, proposer, {type: "RVRSP"}, function () {
-                        count++;
-                    })
+                        success++;
+                        if (success >= grant && next) {
+                            next = false;
+                            self.sendAcceptRequests(client, proposer, acceptors, learners, proposal);
+                        }
+                    });
+                } else {
+                    failure++;
+                    if (failure >= grant && next) {
+                        next = false;
+                        self.sendPrepareRequests(client, proposer, acceptors, learners, proposal.command);
+                    }
                 }
+                proposer.dispatchChangeEvent("flush");
             });
-        }
-
-        console.log('消息内容！' + acceptors.length);
-        // if (count >= (Math.floor(acceptors.length/2) + 1)) {
-        //     self.sendAcceptRequests(proposer, acceptors, proposal);
-        // } else {
-        //     self.sendPrepareRequests(proposer, acceptors, proposal);
-        // }
+        });
     };
 
-    Model.prototype.sendAcceptRequests = function (proposer, acceptors, proposal) {
-        var count = 0;
+    Model.prototype.sendAcceptRequests = function (client, proposer, acceptors, learners, proposal) {
+        var self = this, success = 0, failure = 0, next = true, grant = Math.floor(acceptors.length / 2) + 1;
         acceptors.forEach(function (node) {
             self.send(proposer, node, {type: "AEREQ"}, function () {
                 if (proposal.term >= node._proposalNo) {
-                    node._log.push(proposal.command);
+                    node._log.push(proposal);
                     self.send(node, proposer, {type: "AERSP"}, function () {
-                        count++;
-                    })
+                        success++;
+                        self.send(proposer, client, null, function () {
+                        });
+                        if (success >= grant && next) {
+                            next = false;
+                            self.sendLearnRequests(proposer, acceptors, learners, proposal);
+                        }
+                    });
+                } else {
+                    failure++;
+                    if (failure >= grant) {
+                        next = false;
+                        self.sendPrepareRequests(client, proposer, acceptors, learners, proposal.command);
+                    }
                 }
+                proposer.dispatchChangeEvent("flush");
             });
         });
-        if (count >= (Math.floor(acceptors.length/2) + 1)){
-            self.sendAcceptRequests(proposer, acceptors, proposal);
-        } else {
-            // finish.
-        }
+    };
+
+    Model.prototype.sendLearnRequests = function (proposer, acceptors, learners, proposal) {
+        var self = this;
+
+        proposer._log.splice(proposer._log.indexOf(proposal), 1);
+        acceptors.forEach(function (acc) {
+            acc._log.splice(acc._log.indexOf(proposal), 1);
+        });
+
+        learners.forEach(function (node) {
+            self.send(proposer, node, {type: "LNREQ"}, function () {
+                node._log.push(proposal);
+                proposer.dispatchChangeEvent("flush");
+            });
+        });
+    };
+
+
+    Model.prototype.onFlush = function (event) {
+        event.target.layout().invalidate();
     };
 
     /**
@@ -249,7 +279,7 @@ define(["./controls", "./client", "./message", "./node", "./log_entry"], functio
             x: this.domains.x,
             y: this.domains.y,
         };
-        for(key in this.latencies) {
+        for (key in this.latencies) {
             clone.latencies[key] = this.latencies[key];
         }
         return clone;

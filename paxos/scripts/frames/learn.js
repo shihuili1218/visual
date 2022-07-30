@@ -130,13 +130,9 @@ define(["../model/log_entry"], function (Proposal) {
                 frame.model().controls.show();
             })
 
-            .after(300, function () {
-                frame.model().clear();
-                frame.model().title = '<h2 style="visibility:visible">The end.</h2>';
-                layout.invalidate();
-            });
-
-
+            .then(function () {
+                player.next();
+            })
 
         player.play();
     };
