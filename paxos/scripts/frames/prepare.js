@@ -20,7 +20,7 @@ define(["../model/log_entry"], function (Proposal) {
             model().clear();
             layout.invalidate();
         })
-            .after(500, function () {
+            .after(1000, function () {
                 frame.model().title = '<h2 style="visibility:visible">Prepare Phase</h1>'
                     + '<br/>' + frame.model().controls.html();
                 layout.invalidate();

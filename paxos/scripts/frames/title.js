@@ -13,7 +13,7 @@ define([], function () {
             layout.invalidate();
         })
 
-        .after(500, function () {
+        .after(1000, function () {
             frame.model().title = '<h1 style="visibility:visible">Paxos</h1>'
                         + '<h2 style="visibility:visible">The ancestor of consensus algorithm</h2>'
                         + '<br/>' + frame.model().controls.html();

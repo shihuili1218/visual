@@ -1,17 +1,14 @@
-
 "use strict";
 /*jslint browser: true, nomen: true*/
 /*global define, playback, tsld*/
 
-define(["./controls", "./client", "./message", "./node"], function (Controls, Client, Message, Node) {
+define(["./controls", "./client", "./message", "./node", "./log_entry"], function (Controls, Client, Message, Node, Proposal) {
     function Model() {
         playback.Model.call(this);
 
         this.title = "";
         this.subtitle = "";
         this.defaultNetworkLatency = Model.DEFAULT_NETWORK_LATENCY;
-        this.heartbeatTimeout = Model.DEFAULT_HEARTBEAT_TIMEOUT;
-        this.electionTimeout = Model.DEFAULT_ELECTION_TIMEOUT;
         this.controls = new Controls(this);
         this.nodes = new playback.Set(this, Node);
         this.clients = new playback.Set(this, Client);
@@ -23,6 +20,8 @@ define(["./controls", "./client", "./message", "./node"], function (Controls, Cl
             x: [0, 100],
             y: [0, 100],
         };
+        this._cyclePaxosTimer = null;
+        this.addEventListener("flush", this.onFlush);
     }
 
     Model.prototype = new playback.Model();
@@ -31,23 +30,12 @@ define(["./controls", "./client", "./message", "./node"], function (Controls, Cl
     /**
      * The ratio of simulation time to wall clock time.
      */
-    Model.SIMULATION_RATE           = (1/50);
+    Model.SIMULATION_RATE = (1 / 50);
 
     /**
      * The default network latency between two nodes if not set.
      */
-    Model.DEFAULT_NETWORK_LATENCY   = 20 / Model.SIMULATION_RATE;
-
-    /**
-     * The default heartbeat timeout for the model.
-     */
-    Model.DEFAULT_HEARTBEAT_TIMEOUT = 50 / Model.SIMULATION_RATE;
-
-    /**
-     * The default election timeout for the model.
-     */
-    Model.DEFAULT_ELECTION_TIMEOUT  = 150 / Model.SIMULATION_RATE;
-
+    Model.DEFAULT_NETWORK_LATENCY = 20 / Model.SIMULATION_RATE;
 
     /**
      * Finds either a node or client by id.
@@ -68,7 +56,7 @@ define(["./controls", "./client", "./message", "./node"], function (Controls, Cl
      */
     Model.prototype.tick = function (t) {
         // Remove messages that have already been received.
-        this.messages.filter(function(message) {
+        this.messages.filter(function (message) {
             return (message.recvTime > t);
         });
     };
@@ -80,8 +68,8 @@ define(["./controls", "./client", "./message", "./node"], function (Controls, Cl
      */
     Model.prototype.send = function (source, target, payload, callback) {
         var message,
-            source = (typeof(source) == "string" ? source : source.id),
-            target = (typeof(target) == "string" ? target : target.id),
+            source = (typeof (source) == "string" ? source : source.id),
+            target = (typeof (target) == "string" ? target : target.id),
             latency = this.latency(source, target);
 
         if (!(latency > 0)) {
@@ -89,9 +77,9 @@ define(["./controls", "./client", "./message", "./node"], function (Controls, Cl
         }
 
         message = this.messages.create();
-        message.payload  = (payload !== undefined ? payload : null);
-        message.source   = source;
-        message.target   = target;
+        message.payload = (payload !== undefined ? payload : null);
+        message.source = source;
+        message.target = target;
         message.sendTime = this.playhead();
         message.recvTime = message.sendTime + latency;
 
@@ -154,6 +142,127 @@ define(["./controls", "./client", "./message", "./node"], function (Controls, Cl
         this.latencies = {};
     };
 
+
+    Model.prototype.randomProposal = function (len) {
+        if (arguments.length === 0) {
+            len = 1;
+        }
+        const syb = ["α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω"];
+        let result = "";
+        for (let i = 0; i < len; i++) {
+            const index = Math.floor(Math.random() * syb.length);
+            result += syb[index];
+        }
+        return result;
+    }
+
+    /**
+     * Cycle Paxos.
+     */
+    Model.prototype.loopRunPaxos = function (client, proposer, acceptors, learners) {
+        var self = this, timeout = 5000;
+
+        if (this._cyclePaxosTimer === null) {
+            this.stopRunPaxos();
+            this._cyclePaxosTimer = this.frame().timer(function () {
+                self.send(client, proposer, null, function () {
+                    self.sendPrepareRequests(client, proposer, acceptors, learners, self.randomProposal(3));
+                });
+            }).interval(timeout);
+        }
+    };
+
+    /**
+     * Clears the CyclePaxosTimer.
+     */
+    Model.prototype.stopRunPaxos = function () {
+        this.frame().clearTimer(this._cyclePaxosTimer);
+        this._cyclePaxosTimer = null;
+    };
+
+    Model.prototype.sendPrepareRequests = function (client, proposer, acceptors, learners, proposalVal) {
+        var self = this,
+            success = 0,
+            failure = 0,
+            next = true,
+            grant = Math.floor(acceptors.length / 2) + 1;
+
+        proposer._proposalNo += 1;
+        var proposal = new Proposal(this, proposer._proposalNo, proposer._proposalNo, proposalVal);
+        proposer._log.push(proposal);
+        proposer.dispatchChangeEvent("flush");
+
+        acceptors.forEach(function (node) {
+            self.send(proposer, node, {type: "RVREQ"}, function () {
+                if (proposal.term > node._proposalNo) {
+                    node._proposalNo = proposal.term;
+                    self.send(node, proposer, {type: "RVRSP"}, function () {
+                        success++;
+                        if (success >= grant && next) {
+                            next = false;
+                            self.sendAcceptRequests(client, proposer, acceptors, learners, proposal);
+                        }
+                    });
+                } else {
+                    failure++;
+                    if (failure >= grant && next) {
+                        next = false;
+                        self.sendPrepareRequests(client, proposer, acceptors, learners, proposal.command);
+                    }
+                }
+                proposer.dispatchChangeEvent("flush");
+            });
+        });
+    };
+
+    Model.prototype.sendAcceptRequests = function (client, proposer, acceptors, learners, proposal) {
+        var self = this, success = 0, failure = 0, next = true, grant = Math.floor(acceptors.length / 2) + 1;
+        acceptors.forEach(function (node) {
+            self.send(proposer, node, {type: "AEREQ"}, function () {
+                if (proposal.term >= node._proposalNo) {
+                    node._log.push(proposal);
+                    self.send(node, proposer, {type: "AERSP"}, function () {
+                        success++;
+                        self.send(proposer, client, null, function () {
+                        });
+                        if (success >= grant && next) {
+                            next = false;
+                            self.sendLearnRequests(proposer, acceptors, learners, proposal);
+                        }
+                    });
+                } else {
+                    failure++;
+                    if (failure >= grant) {
+                        next = false;
+                        self.sendPrepareRequests(client, proposer, acceptors, learners, proposal.command);
+                    }
+                }
+                proposer.dispatchChangeEvent("flush");
+            });
+        });
+    };
+
+    Model.prototype.sendLearnRequests = function (proposer, acceptors, learners, proposal) {
+        var self = this;
+
+        proposer._log.splice(proposer._log.indexOf(proposal), 1);
+        acceptors.forEach(function (acc) {
+            acc._log.splice(acc._log.indexOf(proposal), 1);
+        });
+
+        learners.forEach(function (node) {
+            self.send(proposer, node, {type: "LNREQ"}, function () {
+                node._log.push(proposal);
+                proposer.dispatchChangeEvent("flush");
+            });
+        });
+    };
+
+
+    Model.prototype.onFlush = function (event) {
+        event.target.layout().invalidate();
+    };
+
     /**
      * Clones the model.
      */
@@ -170,7 +279,7 @@ define(["./controls", "./client", "./message", "./node"], function (Controls, Cl
             x: this.domains.x,
             y: this.domains.y,
         };
-        for(key in this.latencies) {
+        for (key in this.latencies) {
             clone.latencies[key] = this.latencies[key];
         }
         return clone;

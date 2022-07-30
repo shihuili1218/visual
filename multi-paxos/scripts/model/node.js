@@ -66,21 +66,6 @@ define(["./log_entry"], function (Proposal) {
             return this._state;
         }
         this._state = value;
-
-        // Begin event loop for this node.
-        switch (this._state) {
-            case "proposer":
-                break;
-            case "acceptor":
-                break;
-            case "learner":
-                break;
-            case "stopped":
-                break;
-            default:
-                throw new Error("Invalid node state: " + this._state);
-        }
-
         return this;
     };
 

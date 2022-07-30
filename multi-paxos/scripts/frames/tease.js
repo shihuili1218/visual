@@ -15,10 +15,11 @@ define(["../model/log_entry"], function (Proposal) {
         // Title
         //------------------------------
         frame.after(1, function () {
+            frame.snapshot();
             model().clear();
             layout.invalidate();
         })
-            .after(500, function () {
+            .after(1000, function () {
                 frame.model().title = '<h2 style="visibility:visible">Paxos Disadvantages</h2>'
                     + '<h2 style="visibility:visible">So, We started teasing with Paxos...</h2>'
                     + '<br/>' + frame.model().controls.html();
