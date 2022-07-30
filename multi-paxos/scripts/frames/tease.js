@@ -6,10 +6,22 @@ define(["../model/log_entry"], function (Proposal) {
     return function (frame) {
         var player = frame.player(),
             layout = frame.layout(),
-            model = function() { return frame.model(); },
-            client = function(id) { return frame.model().clients.find(id); },
-            node = function(id) { return frame.model().nodes.find(id); },
-            wait = function() { var self = this; model().controls.show(function() { player.play(); self.stop(); }); };
+            model = function () {
+                return frame.model();
+            },
+            client = function (id) {
+                return frame.model().clients.find(id);
+            },
+            node = function (id) {
+                return frame.model().nodes.find(id);
+            },
+            wait = function () {
+                var self = this;
+                model().controls.show(function () {
+                    player.play();
+                    self.stop();
+                });
+            };
 
         //------------------------------
         // Title
@@ -31,16 +43,26 @@ define(["../model/log_entry"], function (Proposal) {
                 layout.invalidate();
             })
 
+            .after(10, function () {
+            })
+
+
+
             //------------------------------
             // Too many message interactions
             //------------------------------
             .after(500, function () {
                 frame.model().title = '<h2 style="visibility:visible">Too many message interactions</h2>'
-                    + '<br/>' + frame.model().controls.html();
+                    + '<h3 style="visibility:hidden">In Paxos, it always takes two phases to reach a consensus on a proposal</h3>'
+                    + frame.model().controls.html();
                 layout.invalidate();
             })
-
-
+            .after(800, function () {
+                layout.fadeIn($(".title h3"));
+            })
+            .after(800, function () {
+                frame.model().controls.show();
+            })
 
 
             //------------------------------
@@ -51,8 +73,6 @@ define(["../model/log_entry"], function (Proposal) {
                     + '<br/>' + frame.model().controls.html();
                 layout.invalidate();
             })
-
-
 
 
             .after(100, wait).indefinite()
