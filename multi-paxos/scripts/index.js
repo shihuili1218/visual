@@ -3,7 +3,7 @@
 /*jslint browser: true, nomen: true*/
 /*global $, define, d3, playback*/
 
-define(["./model/model", "./layout/layout", "./frames/init", "../../scripts/domReady/domReady-2.0.1!"], function (Model, Layout, frames, doc) {
+define(["../../core/model/model", "../../core/layout/layout", "./frames/init", "../../scripts/domReady/domReady-2.0.1!"], function (Model, Layout, frames, doc) {
     var i, menu, frame,
         player = playback.player();
     player.layout(new Layout("#chart"));

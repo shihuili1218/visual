@@ -2,7 +2,7 @@
 /*jslint browser: true, nomen: true*/
 /*global define*/
 
-define(["../model/log_entry"], function (Proposal) {
+define(["../../../core/model/log_entry"], function (Proposal) {
     return function (frame) {
         var player = frame.player(),
             layout = frame.layout(),
