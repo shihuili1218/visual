@@ -1,5 +1,5 @@
 
-define(["../../../core/model/model", "../../../core/model/log_entry", "../../../scripts/domReady/domReady-2.0.1!"], function (Model, LogEntry, doc) {
+define(["../../../core/model/model", "../../../paxos/core/model/log_entry", "../../../scripts/domReady/domReady-2.0.1!"], function (Model, LogEntry, doc) {
     describe('Node', function(){
         var assert = chai.assert,
             frame = null,
