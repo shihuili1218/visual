@@ -252,6 +252,9 @@ define(["./controls", "./client", "./message", "./node", "./log_entry"], functio
 
         learners.forEach(function (node) {
             self.send(proposer, node, {type: "LNREQ"}, function () {
+                if (node._log.length === 4) {
+                    node._log = [];
+                }
                 node._log.push(proposal);
                 proposer.dispatchChangeEvent("flush");
             });
