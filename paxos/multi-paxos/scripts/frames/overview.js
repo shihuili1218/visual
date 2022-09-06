@@ -60,9 +60,40 @@ define(["../../../core/model/log_entry"], function (LogEntry) {
                 frame.model().clients.create("X");
             })
             .after(10, function () {
-                model().subtitle = '<h2>zzzzzzzzzzzzzzzzzzz.</h2>'
+                model().subtitle = '<h2>Like Paxos, Proposer initiated the Prepare phase</h2>' +
+                    '<h3 style="visibility: hidden;">and obtained the support of the majority Acceptor.</h3>'
                     + model().controls.html();
                 layout.invalidate();
+            })
+            .after(100, wait).indefinite()
+
+            .after(10, function () {
+                frame.snapshot();
+                model().send(client("X"), node("P1"), null, function () {
+                    node("P1")._proposalNo += 1;
+                    model().send(node("P1"), node("A"), {type: "RVREQ"}, function () {
+                        node("A")._proposalNo += 1;
+                        model().send(node("A"), node("P1"), {type: "RVRSP"}, function () {
+                        });
+                        layout.invalidate();
+                    });
+                    model().send(node("P1"), node("B"), {type: "RVREQ"}, function () {
+                        node("B")._proposalNo += 1;
+                        model().send(node("B"), node("P1"), {type: "RVRSP"}, function () {
+                        });
+                        layout.invalidate();
+                    });
+                    model().send(node("P1"), node("C"), {type: "RVREQ"}, function () {
+                        node("C")._proposalNo += 1;
+                        model().send(node("C"), node("P1"), {type: "RVRSP"}, function () {
+                        });
+                        layout.invalidate();
+                    });
+                    layout.invalidate();
+                });
+            })
+            .after(3000, function () {
+                layout.fadeIn($(".subtitle h3"));
             })
             .after(100, wait).indefinite()
 
