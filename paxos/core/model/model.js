@@ -159,6 +159,24 @@ define(["./controls", "./client", "./message", "./node", "./log_entry"], functio
     /**
      * Cycle Paxos.
      */
+    Model.prototype.loopRunMultiPaxos = function (client, proposer, acceptors, learners) {
+        var self = this, timeout = 3000;
+
+        if (this._cyclePaxosTimer === null) {
+            this.stopRunPaxos();
+            this._cyclePaxosTimer = this.frame().timer(function () {
+                self.send(client, proposer, null, function () {
+                    var proposal = new Proposal(this, proposer._proposalNo, proposer._proposalNo, self.randomProposal(3));
+                    proposer._log.push(proposal);
+                    self.sendAcceptRequests(client, proposer, acceptors, learners, proposal);
+                });
+            }).interval(timeout);
+        }
+    };
+
+    /**
+     * Cycle Paxos.
+     */
     Model.prototype.loopRunPaxos = function (client, proposer, acceptors, learners) {
         var self = this, timeout = 5000;
 
