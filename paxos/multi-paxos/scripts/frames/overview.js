@@ -161,7 +161,7 @@ define(["../../../core/model/log_entry"], function (Proposal) {
                 layout.invalidate();
                 model().stopRunPaxos();
             })
-            .after(1500, function () {
+            .after(2500, function () {
                 node("P1")._log = [];
                 node("A")._log = [];
                 node("B")._log = [];
@@ -190,7 +190,7 @@ define(["../../../core/model/log_entry"], function (Proposal) {
 
             .after(10, function () {
                 frame.snapshot();
-                model().subtitle = '<h2>Client Y makes a request to P2, which interrupts the Accept phase of P1</h2>'
+                model().subtitle = '<h2>Client Y sends a request to P2, which will cause the ProposalNo of all acceptors to increment</h2>'
                     + model().controls.html();
                 layout.invalidate();
             })
@@ -223,12 +223,108 @@ define(["../../../core/model/log_entry"], function (Proposal) {
             })
             .after(100, wait).indefinite()
 
-
-            .after(300, function () {
+            .after(10, function () {
                 frame.snapshot();
-                player.next();
+                model().subtitle = '<h2>Then, if P1 negotiates the proposal through the accept stage, it will be rejected by the majority Acceptor</h2>'
+                    + model().controls.html();
+                layout.invalidate();
             })
+            .after(800, function () {
+                model().send(client("X"), node("P1"), null, function () {
+                    var proposal = new Proposal(this, node("P1")._proposalNo, node("P1")._proposalNo, "βκα");
+                    node("P1")._log.push(proposal);
+                    model().send(node("P1"), node("A"), {type: "AEREQ"}, function () {
+                    });
+                    model().send(node("P1"), node("B"), {type: "AEREQ"}, function () {
+                    });
+                    model().send(node("P1"), node("C"), {type: "AEREQ"}, function () {
+                    });
+                    layout.invalidate();
+                });
+                layout.invalidate();
+            })
+            .after(100, wait).indefinite()
 
+            .after(10, function () {
+                frame.snapshot();
+                model().subtitle = '<h2>P1 needs to restart the Prepare phase and regain the support of the majority Acceptor</h2>'
+                    + model().controls.html();
+                layout.invalidate();
+            })
+            .after(500, function () {
+                node("P1")._proposalNo += 1;
+                model().send(node("P1"), node("A"), {type: "RVREQ"}, function () {
+                });
+                model().send(node("P1"), node("B"), {type: "RVREQ"}, function () {
+                });
+                model().send(node("P1"), node("C"), {type: "RVREQ"}, function () {
+                });
+                layout.invalidate();
+            })
+            .after(1500, function () {
+                node("P1")._proposalNo += 1;
+                model().send(node("P1"), node("A"), {type: "RVREQ"}, function () {
+                    node("A")._proposalNo += 1;
+                    model().send(node("A"), node("P1"), {type: "RVRSP"}, function () {
+                    });
+                    layout.invalidate();
+                });
+                model().send(node("P1"), node("B"), {type: "RVREQ"}, function () {
+                    node("B")._proposalNo += 1;
+                    model().send(node("B"), node("P1"), {type: "RVRSP"}, function () {
+                    });
+                    layout.invalidate();
+                });
+                model().send(node("P1"), node("C"), {type: "RVREQ"}, function () {
+                    model().send(node("C"), node("P1"), {type: "RVRSP"}, function () {
+                        node("C")._proposalNo += 1;
+                        layout.invalidate();
+                    });
+                });
+                layout.invalidate();
+            })
+            .after(3000, function () {
+                var proposal = new Proposal(this, node("P1")._proposalNo, node("P1")._proposalNo, "βκα");
+                model().send(node("P1"), node("A"), {type: "AEREQ"}, function () {
+                    node("A")._log.push(proposal);
+                    model().send(node("A"), node("P1"), {type: "AERSP"}, function () {
+                    });
+                    layout.invalidate();
+                });
+                model().send(node("P1"), node("B"), {type: "AEREQ"}, function () {
+                    node("B")._log.push(proposal);
+                    model().send(node("B"), node("P1"), {type: "AERSP"}, function () {
+                    });
+                    layout.invalidate();
+                });
+                model().send(node("P1"), node("C"), {type: "AEREQ"}, function () {
+                    node("C")._log.push(proposal);
+                    model().send(node("C"), node("P1"), {type: "AERSP"}, function () {
+                    });
+                    layout.invalidate();
+                });
+                layout.invalidate();
+            })
+            .after(100, wait).indefinite()
+
+            .after(10, function () {
+                frame.snapshot();
+                node("P1")._log = [];
+                model().subtitle = '<h2>So, P1 can skip the Prepare phase and directly enter the Accept phase</h2>'
+                    + model().controls.html();
+                layout.invalidate();
+            })
+            .after(10, function () {
+                model().loopRunMultiPaxos(client("X"), node("P1"), [node("A"), node("B"), node("C")], [node("L")])
+            })
+            .after(100, wait).indefinite()
+
+            .after(10, function () {
+                model().stopRunPaxos();
+                model().clear();
+                frame.model().title = '<h2 style="visibility:visible">The End.</h2>';
+                layout.invalidate();
+            })
 
         frame.addEventListener("end", function () {
             frame.model().title = frame.model().subtitle = "";
