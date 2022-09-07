@@ -24,5 +24,7 @@ Please report any bugs you find or any suggestions you have for how to make thes
 1. [Raft: Understandable Distributed Consensus](http://visual.ofcoder.com/raft) ([thesecretlivesofdata #1](https://github.com/benbjohnson/thesecretlivesofdata/issues/1))
 
 2. [Paxos: The Ancestor Of Consensus Algorithm](http://visual.ofcoder.com/paxos/basic-paxos) ([#1](https://github.com/shihuili1218/visual/issues/1))
+3. 
+4. [Multi-Paxos](http://visual.ofcoder.com/paxos/multi-paxos) ([#2](https://github.com/shihuili1218/visual/issues/2))
    
 If you have suggestions for new topics, please submit a new Github issue.
