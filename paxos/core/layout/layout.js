@@ -3,12 +3,13 @@
 /*jslint browser: true, nomen: true*/
 /*global $, define, d3, playback, tsld*/
 
-define(["./node_layout", "./client_layout", "./message_layout"], function (NodeLayout, ClientLayout, MessageLayout) {
+define(["./node_layout", "./client_layout", "./message_layout", "./table_layout"], function (NodeLayout, ClientLayout, MessageLayout, TableLayout) {
     function Layout(selector) {
         tsld.Layout.call(this, selector);
         this.nodes = new NodeLayout(this);
         this.clients = new ClientLayout(this);
         this.messages = new MessageLayout(this);
+        this.table = new TableLayout(this);
     }
 
     Layout.prototype = new tsld.Layout();
@@ -22,6 +23,7 @@ define(["./node_layout", "./client_layout", "./message_layout"], function (NodeL
         this.messages.g(this.g.append("g"));
         this.nodes.g(this.g.append("g"));
         this.clients.g(this.g.append("g"));
+        this.table.g(this.g.append("g"));
     };
 
     Layout.prototype.invalidate = function () {
@@ -42,6 +44,7 @@ define(["./node_layout", "./client_layout", "./message_layout"], function (NodeL
 
         this.clients.invalidate(50 - ((nw + ncp + cw) / 2), 0, cw, 100);
         this.nodes.invalidate(50 - ((nw + ncp + cw) / 2) + cw + ncp, 0, nw, 100);
+        this.table.invalidate(50 - ((nw + ncp + cw) / 2) + cw + ncp + nw, 0, nw, 50);
         this.messages.invalidate();
     };
 

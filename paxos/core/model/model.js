@@ -13,6 +13,7 @@ define(["./controls", "./client", "./message", "./node", "./log_entry"], functio
         this.nodes = new playback.Set(this, Node);
         this.clients = new playback.Set(this, Client);
         this.messages = new playback.Set(this, Message);
+        this.tableLines = [];
         this.nodeLabelVisible = true;
         this.latencies = {};
         this.bbox = tsld.bbox(0, 100, 100, 0);

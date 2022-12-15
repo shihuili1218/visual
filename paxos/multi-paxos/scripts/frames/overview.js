@@ -47,6 +47,9 @@ define(["../../../core/model/log_entry"], function (Proposal) {
                 model().nodes.create("L");
                 node("L")._state = "learner";
                 node("L")._proposalNoVisible = false;
+
+                frame.model().tableLines.push({"v": ["sss","zzz"]});
+                frame.model().tableLines.push({"v": ["ass","ffff"]});
             })
             .after(10, function () {
                 model().subtitle = '<h3>As we imagine, after running a round of Prepare phase, subsequent negotiations can directly enter the Accept phase.</h3>'
