@@ -26,5 +26,7 @@ Please report any bugs you find or any suggestions you have for how to make thes
 2. [Paxos: The Ancestor Of Consensus Algorithm](http://visual.ofcoder.com/paxos/basic-paxos) ([#1](https://github.com/shihuili1218/visual/issues/1))
 
 3. [Multi-Paxos](http://visual.ofcoder.com/paxos/multi-paxos) ([#2](https://github.com/shihuili1218/visual/issues/2))
+
+4. [ZAB: Zookeeper Atomic Broadcast Protocol](http://visual.ofcoder.com/zab)
    
 If you have suggestions for new topics, please submit a new Github issue.
